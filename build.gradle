@@ -1,0 +1,48 @@
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'war'
+
+group = 'com.hemmels.oddscheckscraper'
+version = '1.0'
+
+description = """HemsTips JSF"""
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+	maven {
+        url "https://repo1.maven.org/maven2/"
+    }
+	jcenter()
+}
+
+
+configurations {
+    provided
+}
+
+eclipse {
+  classpath {
+	    //customizing the classes output directory:
+	    defaultOutputDir = file('build')
+	
+	    //default settings for downloading sources and Javadoc:
+	    downloadSources = true
+	    downloadJavadoc = false
+	}
+}
+
+dependencies {
+// https://mvnrepository.com/artifact/org.jsoup/jsoup
+compile group: 'org.jsoup', name: 'jsoup', version: '1.9.2'
+// https://mvnrepository.com/artifact/org.projectlombok/lombok
+compile group: 'org.projectlombok', name: 'lombok', version: '1.16.10'
+
+}
+
+war {
+    webInf { from 'WebContent/WEB-INF' } 
+    classpath fileTree('WebContent/WEB-INF/lib') // adds a file-set to the WEB-INF/lib dir.
+    webXml = file('WebContent/WEB-INF/web.xml') // copies a file to WEB-INF/web.xml
+}
