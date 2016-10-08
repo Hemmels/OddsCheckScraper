@@ -50,13 +50,14 @@ public class Main {
 			return;
 		}
 		best = args[5];
-		if (!time.matches("Y|N")){
+		if (!best.matches("Y|N")){
 			System.out.println("6th arg is Y or N for 'display the best odds only'");
 			return;
 		}
 		
 		String page = "http://www.oddschecker.com/horse-racing/" + year + "-" + month + "-" + day + "-" + 
 				meet + "/" + time + "/winner";
+		System.out.println("Best prices for the " + year + "-" + month + "-" + day + " " + meet + " " + time);
 		try {
 			doc = goToPage(page);
 		}
@@ -64,19 +65,37 @@ public class Main {
 			e.printStackTrace();
 			return;
 		}
-		
+
 		ArrayList<String> bookies = new ArrayList<String>();
 		for (Element e : doc.select("tr.eventTableHeader td[data-bk]")){
 			bookies.add(e.select("a").attr("title"));
 		}
-		
+
+		ArrayList<BookieOdds> bookieOdds = new ArrayList<BookieOdds>(bookies.size());
 		int i = 1;
 		for (Element e : doc.select("tr.diff-row")){
 			i = 1;
 			System.out.println(e.attr("data-bname"));
 			for (Element f : e.select("td.o")){
-				System.out.println(bookies.get(i) + " - " + f.attr("data-o"));
+				bookieOdds.add(new BookieOdds(bookies.get(i), Float.parseFloat(f.attr("data-odig"))));
+				if (best.equals("N")){
+					System.out.println(bookies.get(i) + " - " + f.attr("data-o"));
+				}
 				i++;
+			}
+			if (best.equals("Y")){
+				String bestBookie = "";
+				float bestOdds = 0;
+				for (BookieOdds odds : bookieOdds){
+					if (odds.getOdds() == bestOdds){
+						bestBookie += "|" + odds.getName();
+					}
+					if (odds.getOdds() > bestOdds){
+						bestOdds = odds.getOdds();
+						bestBookie = odds.getName();
+					}
+				}
+				System.out.println("Best oods: " + bestBookie + " - " + bestOdds);
 			}
 			System.out.println("");
 		}
@@ -98,4 +117,32 @@ public class Main {
 		throw new CouldNotGetObjectException(page);
 	}
 
+}
+
+class BookieOdds{
+	
+	private String name;
+	private float odds;
+	
+	public BookieOdds(String name, float odds) {
+		this.name = name;
+		this.odds = odds;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public float getOdds() {
+		return odds;
+	}
+
+	public void setOdds(float odds) {
+		this.odds = odds;
+	}
+	
 }
